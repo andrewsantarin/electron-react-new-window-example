@@ -11,6 +11,14 @@ This example makes use of React's abilities to create HTML content outside of th
 
 The [Create React App readme](./CREATE-REACT-APP-README.md) is available in a separate file.
 
+**Table of Contents**
+- [Installation](#Installation)
+- [Running](#Running)
+  - [All at once](#All-at-once)
+  - [Separately](#Separately)
+    - [Electron](#Electron)
+    - [React](#React)
+
 ## Installation
 1. Clone the project.
 2. Install the dependencies. (**Note:** This project uses [Yarn](https://yarnpkg.com). You may use [NPM](https://npmjs.com), but I don't guarantee any package integrities that way...)
@@ -23,6 +31,8 @@ yarn
 ```
 
 ## Running
+
+### All at once
 The app contains two parts:
 - the Electron Node.js app
 - the React Web app
@@ -32,7 +42,7 @@ Start the app with both of those parts running in parallel under one terminal:
 yarn start
 ```
 
-### Running separately
+### Separately
 If you need to run them separately for, e.g. monitoring those apps separately (`create-react-app` kind of swallows the terminal logs coming from Node.js with [`concurrently`](https://github.com/kimmobrunfeldt/concurrently) running),
 you can use these commands, which are just convenience aliases. (**Note:** In order to actually see the app running, the React instance must run at [http://localhost:3000](http://localhost:3000)).
 
