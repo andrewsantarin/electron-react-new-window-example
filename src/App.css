@@ -19,8 +19,87 @@
   color: white;
 }
 
-.App-link {
+/**
+ * Lord       - :link
+ * Vader's    - :visited
+ * former     - :focus
+ * handle,    - :hover
+ * "Anakin".  - :active
+ */
+.App-button,
+.App-link:link {
   color: #61dafb;
+  border: 0px solid transparent;
+}
+
+.App-button {
+  border-width: 2px;
+  border-color: #61dafb;
+  background: transparent;
+  outline: 0;
+  padding: .25em 1em;
+  padding-bottom: 0.35em;
+}
+
+.App-link:visited {
+  border-color: inherit;
+  color: inherit;
+}
+
+.App-button:focus,
+.App-link:focus {
+  border-color: #88e2ff;
+  color: #88e2ff;
+}
+
+.App-button:hover,
+.App-link:hover {
+  border-color: #88e2ff;
+  color: #88e2ff;
+}
+
+.App-button:focus,
+.App-button:hover {
+  background-color: rgba(136, 226, 255, 0.1);
+}
+
+.App-link:active {
+  color: #f92239;
+}
+
+.App-button:active {
+  border-color: #f92239;
+  background-color: #f92239;
+  color: white;
+}
+
+.App-input-group input,
+.App-input-group button {
+  max-width: 4em;
+  font-size: calc(10px + 2vmin);
+}
+
+.App-button-group {
+  width: 100%;
+  min-height: 360px;
+}
+
+.App-detached-container button.App-button {
+  font-size: 62.5%;
+}
+.App-detached-container button.App-button:not(:last-child) {
+  margin-right: 0.25em;
+}
+
+.App-close-icon {
+  line-height: 0%;
+  font-size: 100%;
+  font-family: 'Fredoka One',-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+.App-close-icon:last-child {
+  margin-left: 0.5em;
 }
 
 @keyframes App-logo-spin {
