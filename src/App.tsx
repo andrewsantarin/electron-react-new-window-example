@@ -1,164 +1,86 @@
-import React, { Fragment, useCallback, useState } from 'react';
+import React, { Fragment, useCallback, useRef, useState } from 'react';
 import NewWindow from 'react-new-window';
+import useEventListener from '@use-it/event-listener'; // Cherry-picking the modules avoids unnecesary 'keyboardjs' and 'rebound' peer dependency requirements. https://github.com/streamich/react-use/blob/master/docs/Usage.md
+import useUnmount from 'react-use/lib/useUnmount';
+import { memorize } from 'memorize-decorator';
+import isNull from 'lodash/isNull';
+import omit from 'lodash/omit';
 
 import logo from './logo.svg';
 import './App.css';
 
-import { getUniqueTitleId, getUniqueUrlId, withWhyDidYouRender, isDevelopment } from './lib';
+import { getUniqueTitleId, getUniqueUrlId, withWhyDidYouRender, isDevelopment } from 'lib';
+import { useIncrementalValue } from 'components/incremental-value/incremental-value.hooks';
+import { IncrementalValueGroup } from 'components/incremental-value/IncrementalValueGroup';
+import { useDetachableWindowsState, useDetachableWindowsRef } from 'components/detachable-window/detachable-window.hooks';
+import { AddDetachableWindowButton } from 'components/detachable-window/AddDetachableWindowButton';
+import { DetachableWindowGroup } from 'components/detachable-window/DetachableWindowGroup';
 
 
+type Lookup<Value> = {
+  [key: string]: Value;
+};
 type WindowConfig = {
   titleId: string;
   urlId: string;
 };
-type WindowDetached = {
-  [key: string]: WindowConfig;
-};
+type DetachedWindowLookup = Lookup<WindowConfig>;
+type DetachedWindowRefObjectLookup = Lookup<NewWindow | null>;
 
 export const App = function App() {
-  const [ value, setValue ] = useState(0);
-  const [ detached, setDetached ] = useState({} as WindowDetached);
+  const {
+    value,
+    changeValue,
+    incrementValue,
+    decrementValue,
+  } = useIncrementalValue();
 
-  const detachWindow = useCallback(
-    () => {
-      const newConfig: WindowConfig = {
-        titleId: getUniqueTitleId(),
-        urlId: getUniqueUrlId(),
-      };
-      const newDetached = {
-        ...detached,
-        [newConfig.urlId]: newConfig,
-      };
-      setDetached(newDetached);
-    },
-    [
-      detached,
-      setDetached,
-    ]
-  );
-  const removeWindow = useCallback(
-    (key: string) => () => {
-      console.log('removeWindow', key);
-      const {
-        [key]: removedConfig,
-        ...newDetached
-      } = detached;
-      setDetached(newDetached);
-    },
-    [
-      detached,
-      setDetached,
-    ],
-  )
-  const closeWindow = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-      console.log('closeWindow', event.currentTarget.value);
-      const {
-        [event.currentTarget.value]: removedConfig,
-        ...newDetached
-      } = detached;
-      setDetached(newDetached);
-    },
-    [
-      detached,
-      setDetached,
-    ]
-  );
+  const {
+    state,
+    addNewWindow,
+    removeWindowByKey,
+  } = useDetachableWindowsState();
 
-  const changeValue = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      setValue(parseInt(event.currentTarget.value));
-    },
-    [
-      setValue,
-    ]
-  );
-  const incrementValue = useCallback(
-    () => {
-      setValue(value + 1);
-    },
-    [
-      value,
-      setValue,
-    ]
-  );
-  const decrementValue = useCallback(
-    () => {
-      setValue(value - 1);
-    },
-    [
-      value,
-      setValue,
-    ]
-  );
+  const {
+    ref,
+    createRef,
+    releaseWindowByKey,
+    releaseWindowsByKeys,
+    releaseWindowsByKeysOnCleanup,
+  } = useDetachableWindowsRef();
 
-  const detachedKeys = Object.keys(detached);
+  const closeWindow = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    const key = event.currentTarget.value;
+    releaseWindowByKey(key);
+  };
+
+  releaseWindowsByKeysOnCleanup(keys);
 
   return (
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
         <h1>{window.location.href}</h1>
-        <p className="App-input-group ">
-          <label>
-            <span className="label">Provide a value:</span>
-            <input
-              type="number"
-              value={value}
-              onChange={changeValue}
-            />
-            <button onClick={incrementValue}>+</button>
-            <button onClick={decrementValue}>-</button>
-          </label>
-        </p>
-        <button
-          className="App-button"
-          onClick={detachWindow}
-        >
-          Open a new window
-        </button>
+        <IncrementalValueGroup
+          value={value}
+          onChange={changeValue}
+          onIncrementClick={incrementValue}
+          onDecrementClick={decrementValue}
+        />
+        <AddDetachableWindowButton
+          onAddClick={addNewWindow}
+          text="Open a new window"
+        />
         <hr />
-        <div className="App-button-group App-detached-container">
-          {detachedKeys.length > 0 
-            ? <h2>Child UUIDs:</h2>
-            : <h2>Open a new window to see some UUIDs</h2>
-          }
-          {detachedKeys.map((key) => (
-            <Fragment key={key}>
-              <button
-                className="App-button"
-                onClick={closeWindow}
-                value={key}
-              >
-                <code>{key}</code>
-                <span className="App-button-icon App-close-icon">x</span>
-              </button>
-              <NewWindow
-                onUnload={removeWindow(key)}
-                features={{
-                  width: 600,
-                  height: 480,
-                }}
-              >
-                <header className="App-header">
-                  <h2>Child UUID: <code>{key}</code> </h2>
-                  <div>Sharing state with parent window.</div>
-                  <p>
-                    <label>Value from parent:</label>
-                    <strong>{value}</strong>
-                  </p>
-                  <button
-                    className="App-button"
-                    onClick={closeWindow}
-                    value={key}
-                    >
-                    Close child
-                  </button>
-                </header>
-              </NewWindow>
-            </Fragment>
-          ))}
-        </div>
+        <DetachableWindowGroup
+          windowRefLookup={create}
+          onWindowCloseClick={closeWindow}
+          onWindowUnload={}
+          onWindowGroupCleanup
+          createWindowRef={createRef}
+        >
+
+        </DetachableWindowGroup>
       </header>
     </div>
   );

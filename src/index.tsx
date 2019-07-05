@@ -9,7 +9,7 @@ import * as serviceWorker from './serviceWorker';
 
 import { isDevelopment, runWhyDidYouRender } from 'lib';
 
-runWhyDidYouRender(isDevelopment(), true)(React);
+runWhyDidYouRender(isDevelopment())(React);
 
 ReactDOM.render(<App />, document.getElementById('root'));
 
